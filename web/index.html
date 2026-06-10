@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smarthome Control</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="bg-glow"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <h1>Smarthome <span>Control</span></h1>
+    </div>
+    <div class="broker-status" id="brokerStatus" title="Status koneksi broker">
+      <span class="led"></span><span class="label">Menyambung…</span>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Pemilih alat -->
+    <section class="device-picker">
+      <label for="deviceSelect">Pilih Alat</label>
+      <div class="picker-row">
+        <select id="deviceSelect"></select>
+        <div class="device-online" id="deviceOnline">
+          <span class="led"></span><span class="label">—</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Kartu perangkat dibuat oleh JS -->
+    <section class="cards" id="cards"></section>
+  </main>
+
+  <footer class="foot">
+    <span id="footMsg">R2C Smarthome • MQTT over HiveMQ Cloud</span>
+  </footer>
+
+  <!-- Template kartu perangkat -->
+  <template id="cardTemplate">
+    <article class="card" data-relay="">
+      <div class="card-head">
+        <div class="card-title">
+          <span class="icon">⏻</span>
+          <h2 class="dev-name">Perangkat</h2>
+        </div>
+        <span class="state-badge">OFF</span>
+      </div>
+
+      <button class="toggle" aria-label="Nyalakan / matikan">
+        <span class="knob"></span>
+      </button>
+
+      <div class="schedule">
+        <div class="sched-head">
+          <span>Jadwal Harian</span>
+          <label class="switch-sm">
+            <input type="checkbox" class="sched-enabled" />
+            <span class="slider-sm"></span>
+          </label>
+        </div>
+        <div class="sched-times">
+          <label>Nyala<input type="time" class="sched-on" /></label>
+          <label>Mati<input type="time" class="sched-off" /></label>
+        </div>
+        <button class="save-sched">Simpan Jadwal</button>
+        <p class="sched-info"></p>
+      </div>
+    </article>
+  </template>
+
+  <script src="https://unpkg.com/mqtt@5/dist/mqtt.min.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
