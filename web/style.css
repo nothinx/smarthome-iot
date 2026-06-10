@@ -96,6 +96,10 @@ body {
   background-repeat: no-repeat; background-position: right 16px center;
 }
 #deviceSelect:focus { outline: none; border-color: var(--accent); }
+#deviceSelect option {
+  background: #121829;   /* latar gelap agar teks terbaca saat dropdown dibuka */
+  color: #e8edf7;
+}
 
 .device-online {
   display: flex; align-items: center; gap: 8px;
