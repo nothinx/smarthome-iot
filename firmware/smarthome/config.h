@@ -24,11 +24,6 @@
 #define RELAY1_PIN 22          // IN1
 #define RELAY2_PIN 23          // IN2
 
-// --- Waktu (NTP) -----------------------------------------------------
-#define NTP_SERVER "pool.ntp.org"
-#define TZ_OFFSET_SEC (7 * 3600)   // WIB = UTC+7
-#define DST_OFFSET_SEC 0
-
 // --- WiFi (AP lokal Tenda, kredensial tetap utk semua alat) ----------
 #define WIFI_SSID "R2C"
 #define WIFI_PASS "juarajuara"

@@ -116,18 +116,13 @@ python -m http.server 8000
 - Status broker pojok kanan atas → **Tersambung** (hijau).
 - Pilih **Alat 01** → indikator **Online** jika ESP-01 hidup.
 - Tekan tombol perangkat → relay berbunyi *klik*, badge berubah **ON/OFF**.
-- Atur jadwal: aktifkan, isi jam Nyala/Mati, **Simpan**. Tutup & buka lagi web →
-  jadwal tetap (tersimpan retained + di NVS ESP).
+- Refresh halaman / pindah alat → status terkini langsung muncul (retained).
 
 ### 4.2 Uji tanpa hardware (cek alur MQTT)
 Pakai **MQTT Explorer** (<http://mqtt-explorer.com>):
 - Connect ke `192.168.4.180`, port 1883 (plain) — tanpa user/pass.
 - Publish ke `<NS>/alat-01/relay/1/set` payload `ON` → website Alat 01 berubah ON.
 - Lihat topic retained `<NS>/alat-01/relay/1/state`, `<NS>/alat-01/status`.
-
-### 4.3 Uji jadwal cepat
-Set jam **Nyala** = 1–2 menit dari sekarang, **Mati** = semenit setelahnya,
-aktifkan, Simpan. Amati relay nyala lalu mati otomatis pada menit tsb.
 
 ---
 
@@ -141,6 +136,5 @@ aktifkan, Simpan. Amati relay nyala lalu mati otomatis pada menit tsb.
 | ESP tak connect MQTT (Serial `rc=-2`) | IP `MQTT_HOST` salah, broker belum jalan, atau listener 1883 belum aktif. Cek IP komputer broker. |
 | ESP tak connect WiFi | SSID/password `R2C`/`juarajuara` salah, atau AP belum nyala. |
 | Relay nyala saat baru dicolok | Pastikan board active-low; firmware sudah set OFF dulu saat boot. |
-| **Jadwal tidak jalan** | AP lokal **tanpa internet** → NTP gagal (Serial `[ntp] ... gagal`). Jadwal butuh jam akurat. Sambungkan internet ke AP, atau lihat catatan jadwal offline. |
 | Indikator Offline padahal alat hidup | Alat belum konek broker / beda nomor alat dipilih. |
 | State lama "nyangkut" di web | Pesan retained tersimpan di broker. Hapus: publish payload **kosong** (retain on) ke topik `state`/`status` terkait. |

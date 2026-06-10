@@ -175,49 +175,6 @@ body {
 .card.is-on .toggle .knob::after { color: #033; }
 .toggle:disabled { opacity: 0.45; cursor: not-allowed; }
 
-/* Schedule */
-.schedule { margin-top: 22px; border-top: 1px solid var(--card-border); padding-top: 18px; }
-.sched-head {
-  display: flex; align-items: center; justify-content: space-between;
-  font-size: 14px; font-weight: 600; color: var(--muted);
-  margin-bottom: 14px;
-}
-.sched-times { display: flex; gap: 12px; }
-.sched-times label {
-  flex: 1; display: flex; flex-direction: column; gap: 6px;
-  font-size: 12px; color: var(--muted);
-}
-.sched-times input[type="time"] {
-  background: #0e1424; color: var(--text);
-  border: 1px solid var(--card-border);
-  border-radius: 10px; padding: 10px; font-size: 15px;
-  color-scheme: dark;
-}
-.save-sched {
-  width: 100%; margin-top: 14px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: #fff; border: none; border-radius: 12px;
-  padding: 12px; font-size: 14px; font-weight: 600; cursor: pointer;
-  transition: 0.2s;
-}
-.save-sched:hover { filter: brightness(1.1); }
-.save-sched:active { transform: scale(0.98); }
-.sched-info { margin-top: 10px; font-size: 12px; color: var(--muted); min-height: 16px; }
-
-/* small switch */
-.switch-sm { position: relative; display: inline-block; width: 40px; height: 22px; }
-.switch-sm input { opacity: 0; width: 0; height: 0; }
-.slider-sm {
-  position: absolute; inset: 0; cursor: pointer;
-  background: var(--off); border-radius: 999px; transition: 0.3s;
-}
-.slider-sm::before {
-  content: ""; position: absolute; height: 16px; width: 16px;
-  left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: 0.3s;
-}
-.switch-sm input:checked + .slider-sm { background: var(--accent); }
-.switch-sm input:checked + .slider-sm::before { transform: translateX(18px); }
-
 /* Footer */
 .foot {
   position: relative; z-index: 1;

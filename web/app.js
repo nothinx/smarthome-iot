@@ -41,27 +41,12 @@
         root: node,
         badge: node.querySelector(".state-badge"),
         toggle: node.querySelector(".toggle"),
-        schedEnabled: node.querySelector(".sched-enabled"),
-        schedOn: node.querySelector(".sched-on"),
-        schedOff: node.querySelector(".sched-off"),
-        saveBtn: node.querySelector(".save-sched"),
-        info: node.querySelector(".sched-info"),
         state: false,
       };
 
       c.toggle.addEventListener("click", () => {
         const next = c.state ? "OFF" : "ON";
         publish(`${base(currentDevice)}/relay/${i + 1}/set`, next, false);
-      });
-
-      c.saveBtn.addEventListener("click", () => {
-        const payload = JSON.stringify({
-          enabled: c.schedEnabled.checked,
-          on: c.schedOn.value || "",
-          off: c.schedOff.value || "",
-        });
-        publish(`${base(currentDevice)}/schedule/${i + 1}/set`, payload, false);
-        c.info.textContent = "Jadwal terkirim…";
       });
 
       cards.push(c);
@@ -115,11 +100,9 @@
       setDeviceOnline(payload === "online");
       return;
     }
-    const m = sub.match(/^(relay|schedule)\/([12])\/state$/);
+    const m = sub.match(/^relay\/([12])\/state$/);
     if (!m) return;
-    const idx = Number(m[2]) - 1;
-    if (m[1] === "relay") updateRelay(idx, payload);
-    else updateSchedule(idx, payload);
+    updateRelay(Number(m[1]) - 1, payload);
   }
 
   // ---------- UI update ----------
@@ -130,28 +113,11 @@
     c.badge.textContent = c.state ? "ON" : "OFF";
   }
 
-  function updateSchedule(idx, payload) {
-    const c = cards[idx];
-    try {
-      const s = JSON.parse(payload);
-      c.schedEnabled.checked = !!s.enabled;
-      if (s.on) c.schedOn.value = s.on;
-      if (s.off) c.schedOff.value = s.off;
-      c.info.textContent = s.enabled
-        ? `Aktif: nyala ${s.on || "--:--"}, mati ${s.off || "--:--"}`
-        : "Jadwal nonaktif";
-    } catch (_) { /* abaikan payload rusak */ }
-  }
-
   function resetCards() {
     cards.forEach((c) => {
       c.state = false;
       c.root.classList.remove("is-on");
       c.badge.textContent = "OFF";
-      c.schedEnabled.checked = false;
-      c.schedOn.value = "";
-      c.schedOff.value = "";
-      c.info.textContent = "";
     });
     setDeviceOnline(false);
   }
