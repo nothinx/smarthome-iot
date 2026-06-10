@@ -71,7 +71,8 @@
 
   // ---------- MQTT ----------
   function connect() {
-    const url = `wss://${CFG.host}:${CFG.port}${CFG.path}`;
+    const proto = CFG.protocol || "wss";
+    const url = `${proto}://${CFG.host}:${CFG.port}${CFG.path || ""}`;
     setBroker("connecting", "Menyambung…");
     const opts = {
       clientId: "web-" + Math.random().toString(16).slice(2, 10),

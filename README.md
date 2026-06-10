@@ -1,13 +1,16 @@
 # Smarthome IoT — Workshop (10 Alat)
 
 Sistem smarthome berbasis **ESP32 + 2 relay active-low**, dikontrol lewat
-**website** via **MQTT (HiveMQ Cloud)**. Mendukung kontrol manual ON/OFF dan
-**jadwal jam harian** per relay. Dirancang untuk **workshop 10 alat identik**.
+**website** via **MQTT (broker lokal Mosquitto)**. Mendukung kontrol manual
+ON/OFF dan **jadwal jam harian** per relay. Untuk **workshop 10 alat identik**.
 
 ```
-[Website GitHub Pages] --WSS:8084--> [broker.emqx.io] <--MQTTS:8883-- [ESP32 x10]
-   pilih alat 01..10                  broker publik                   relay + jadwal
+[Website (http lokal)] --ws:9001--> [Mosquitto LAN] <--tcp:1883-- [ESP32 x10]
+   pilih alat 01..10                192.168.4.180                  relay + jadwal
 ```
+
+> Semua perangkat (ESP, broker, browser) harus di **WiFi/LAN yang sama**.
+> Halaman dibuka via **http lokal**, bukan https (lihat Panduan Setup).
 
 ## Fitur
 - Kontrol manual ON/OFF dua perangkat per alat.
@@ -35,11 +38,13 @@ smarthome-iot/
 ```
 
 ## Mulai cepat
-1. **Broker**: pakai broker publik `broker.emqx.io` (tanpa daftar). Tetapkan
-   prefix unik `TOPIC_NS` (firmware) = `namespace` (web), mis. `r2c-sh-9x4kq2`.
+1. **Broker**: jalankan Mosquitto lokal (listener `1883` plain + `9001`
+   websockets). Pastikan IP-nya sesuai `MQTT_HOST` & `host` di config.
 2. **Firmware**: isi `firmware/smarthome/config.h`, ganti `DEVICE_ID` per alat, flash.
-3. **WiFi**: sambungkan tiap alat lewat hotspot `Smarthome-Setup-NN` (captive portal).
-4. **Web**: isi `web/config.js`, host folder `web/` di GitHub Pages.
+3. **WiFi**: kredensial AP sudah hardcoded di `config.h` (`R2C`/`juarajuara`),
+   ESP langsung connect — pastikan AP & broker di LAN yang sama.
+4. **Web**: jalankan folder `web/` via **http lokal** (`python -m http.server`),
+   buka dari perangkat di LAN yang sama.
 
 ➡️ Langkah detail di **[docs/PANDUAN-SETUP.md](docs/PANDUAN-SETUP.md)**.
 

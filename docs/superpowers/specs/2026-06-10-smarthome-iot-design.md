@@ -3,6 +3,13 @@
 **Tanggal:** 2026-06-10
 **Status:** Disetujui untuk implementasi
 
+> **Diperbarui 2026-06-11 (sebagian disuperseksi).** Implementasi final beralih
+> ke **broker lokal Mosquitto** (LAN, plain `1883` + ws `9001`) dan **WiFi
+> hardcoded** (AP `R2C`), bukan broker cloud EMQX + WiFiManager seperti tertulis
+> di bawah. Acuan terkini: `docs/PANDUAN-SETUP.md`, `firmware/.../config.h`,
+> `web/config.js`. Catatan: NTP butuh internet pada AP tsb; tanpa internet,
+> fitur jadwal tidak berfungsi (kontrol manual tetap jalan).
+
 ## Tujuan
 
 Sistem smarthome untuk **workshop berisi 10 alat identik**. Tiap alat = ESP32

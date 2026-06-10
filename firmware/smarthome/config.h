@@ -13,12 +13,12 @@
 // tim Anda agar alat tidak bentrok/diganggu. SAMAKAN dengan web/config.js.
 #define TOPIC_NS "r2c-sh-7dc6b0"
 
-// --- Broker MQTT publik (open access, tanpa daftar) ------------------
-// broker.emqx.io menyediakan MQTTS (ESP) + WSS (web) tanpa sertifikat.
-#define MQTT_HOST "broker.emqx.io"
-#define MQTT_PORT 8883         // MQTTS/TLS untuk ESP (web pakai 8084 WSS)
-#define MQTT_USER ""           // broker publik: kosongkan (anonim)
-#define MQTT_PASS ""           // broker publik: kosongkan (anonim)
+// --- Broker MQTT LOKAL (Mosquitto di LAN, plain/tanpa TLS) ------------
+// ESP, broker, dan perangkat pengontrol HARUS di jaringan WiFi yang sama.
+#define MQTT_HOST "192.168.4.180"  // IP broker lokal
+#define MQTT_PORT 1883             // plain MQTT (web socket pakai 9001)
+#define MQTT_USER ""               // broker lokal anonim: kosongkan
+#define MQTT_PASS ""               // broker lokal anonim: kosongkan
 
 // --- Pin relay (active-low: LOW = nyala) -----------------------------
 #define RELAY1_PIN 22          // IN1
@@ -29,7 +29,8 @@
 #define TZ_OFFSET_SEC (7 * 3600)   // WIB = UTC+7
 #define DST_OFFSET_SEC 0
 
-// --- Nama portal konfigurasi WiFi (captive portal) -------------------
-#define WIFI_PORTAL_PREFIX "Smarthome-Setup-"   // -> "Smarthome-Setup-01"
+// --- WiFi (AP lokal Tenda, kredensial tetap utk semua alat) ----------
+#define WIFI_SSID "R2C"
+#define WIFI_PASS "juarajuara"
 
 #endif // CONFIG_H

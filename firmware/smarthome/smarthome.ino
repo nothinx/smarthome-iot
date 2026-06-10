@@ -1,19 +1,17 @@
 // =====================================================================
 //  Smarthome IoT — Firmware ESP32 DevKit v1
-//  2 relay active-low + MQTT (broker publik) + jadwal jam (NTP) + NVS
+//  2 relay active-low + MQTT (broker lokal, plain) + jadwal jam (NTP) + NVS
 //
 //  Firmware ini IDENTIK untuk 10 alat. Yang diganti tiap unit hanya
 //  DEVICE_ID di config.h.
 //
 //  Library (Library Manager):
-//    - WiFiManager        (tzapu)
 //    - PubSubClient       (Nick O'Leary)
 //    - ArduinoJson        (Benoit Blanchon)
-//  WiFiClientSecure, Preferences, time.h = bawaan core ESP32.
+//  WiFi, WiFiClient, Preferences, time.h = bawaan core ESP32.
 // =====================================================================
 #include <WiFi.h>
-#include <WiFiClientSecure.h>
-#include <WiFiManager.h>
+#include <WiFiClient.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include <Preferences.h>
@@ -23,7 +21,7 @@
 // ---------------------------------------------------------------------
 //  Global
 // ---------------------------------------------------------------------
-WiFiClientSecure netClient;
+WiFiClient       netClient;     // broker lokal = plain TCP (tanpa TLS)
 PubSubClient     mqtt(netClient);
 Preferences      prefs;
 
@@ -242,27 +240,30 @@ void setup() {
     applyRelay(i);
   }
 
-  // WiFi via captive portal
-  char portal[28];
-  sprintf(portal, "%s%02d", WIFI_PORTAL_PREFIX, DEVICE_ID);
-  WiFiManager wm;
-  wm.setConfigPortalTimeout(180);
-  if (!wm.autoConnect(portal)) {
-    Serial.println("[wifi] gagal, restart...");
+  // WiFi (AP lokal, kredensial tetap di config.h)
+  WiFi.mode(WIFI_STA);
+  WiFi.setAutoReconnect(true);
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+  Serial.printf("[wifi] menyambung ke %s", WIFI_SSID);
+  for (int i = 0; i < 60 && WiFi.status() != WL_CONNECTED; i++) {
+    delay(500);
+    Serial.print(".");
+  }
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println(" gagal, restart...");
     delay(2000);
     ESP.restart();
   }
-  Serial.printf("[wifi] tersambung: %s\n", WiFi.localIP().toString().c_str());
+  Serial.printf("\n[wifi] tersambung: %s\n", WiFi.localIP().toString().c_str());
 
-  // NTP (jadwal butuh jam yang benar)
+  // NTP (jadwal butuh jam yang benar — perlu internet di AP ini)
   configTime(TZ_OFFSET_SEC, DST_OFFSET_SEC, NTP_SERVER);
   struct tm t;
   Serial.print("[ntp] sinkron waktu");
   for (int i = 0; i < 20 && !getLocalTime(&t, 500); i++) Serial.print(".");
   Serial.println(getLocalTime(&t, 500) ? " ok" : " gagal (lanjut tanpa jam)");
 
-  // MQTT (TLS tanpa validasi sertifikat — cukup untuk workshop)
-  netClient.setInsecure();
+  // MQTT ke broker lokal (plain TCP, port 1883)
   mqtt.setServer(MQTT_HOST, MQTT_PORT);
   mqtt.setCallback(onMessage);
   mqtt.setBufferSize(512);

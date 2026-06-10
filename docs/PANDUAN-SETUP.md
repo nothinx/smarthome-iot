@@ -1,29 +1,42 @@
 # Panduan Setup Smarthome IoT (Workshop)
 
-Memakai **broker publik open-access** (tanpa daftar akun).
-Urutan: **(1) Tentukan prefix → (2) Firmware → (3) Website → (4) Uji**.
+Memakai **broker lokal (Mosquitto)** di LAN — semua di jaringan yang sama.
+Urutan: **(1) Broker lokal → (2) Firmware → (3) Website → (4) Uji**.
+
+> **SYARAT JARINGAN.** ESP, komputer broker, dan perangkat yang membuka website
+> **harus terhubung ke WiFi/LAN yang sama**. Broker lokal tidak bisa diakses
+> dari internet luar.
 
 ---
 
-## 1. Broker publik & prefix unik
+## 1. Broker lokal (Mosquitto)
 
-Kita pakai broker publik **`broker.emqx.io`** (gratis, tanpa daftar). Ia
-menyediakan port aman yang kita butuhkan:
+Komputer teman Anda menjalankan broker. Pastikan dua listener aktif:
 
 | Klien | Host | Port | Protokol |
 |---|---|---|---|
-| ESP32 | `broker.emqx.io` | **8883** | MQTT over TLS |
-| Website | `broker.emqx.io` | **8084** | MQTT over WebSocket Secure, path `/mqtt` |
+| ESP32 | `192.168.4.180` | **1883** | MQTT plain (TCP) |
+| Website | `192.168.4.180` | **9001** | MQTT over WebSocket (ws), root path |
 
-> **PENTING — prefix unik.** Broker publik dipakai banyak orang di seluruh
-> dunia dan **tanpa password**. Agar alat Anda tidak bentrok/diganggu, ganti
-> nilai `TOPIC_NS` (firmware) dan `namespace` (web) dengan **string acak unik**
-> milik tim Anda, mis. `r2c-sh-9x4kq2`. **Keduanya harus sama persis.**
-> Siapa pun yang tidak tahu prefix Anda tidak bisa mengontrol alat.
+Contoh isi `mosquitto.conf` yang dibutuhkan:
+```conf
+listener 1883
+protocol mqtt
 
-> Untuk keandalan maksimum (mis. demo penting), Anda bisa pindah ke broker
-> berakun (HiveMQ Cloud) nanti: cukup isi `host`, `username`, `password` di
-> kedua config dan ganti port web ke 8884. Kode mendukung keduanya.
+listener 9001
+protocol websockets
+
+allow_anonymous true
+```
+Jalankan: `mosquitto -c mosquitto.conf -v`. Pastikan firewall mengizinkan port
+1883 & 9001.
+
+> **Ganti IP `192.168.4.180`** bila IP komputer broker berbeda. Nilai ini harus
+> sama di `MQTT_HOST` (firmware `config.h`) dan `host` (web `config.js`).
+> Cek IP: `ipconfig` (Windows) / `ip a` (Linux) / `ifconfig` (Mac).
+
+> Prefix `TOPIC_NS`/`namespace` (mis. `r2c-sh-7dc6b0`) boleh tetap — di broker
+> lokal tidak wajib unik, tapi biarkan sama di kedua config.
 
 ---
 
@@ -35,63 +48,65 @@ menyediakan port aman yang kita butuhkan:
    `https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json`
    lalu *Tools → Board Manager → cari "esp32" → Install*.
 2. *Tools → Manage Libraries*, install:
-   - **WiFiManager** (tzapu)
    - **PubSubClient** (Nick O'Leary)
    - **ArduinoJson** (Benoit Blanchon)
 
 ### 2.2 Isi konfigurasi
-Buka `firmware/smarthome/config.h` dan isi:
+Buka `firmware/smarthome/config.h`. Yang perlu dicek:
 ```c
-#define DEVICE_ID 1                 // GANTI 1..10 untuk tiap alat
-#define TOPIC_NS  "r2c-sh-9x4kq2"   // GANTI: string acak unik (sama dgn web)
+#define DEVICE_ID 1               // GANTI 1..10 untuk tiap alat
+#define MQTT_HOST "192.168.4.180" // IP broker lokal (sesuaikan bila beda)
+#define WIFI_SSID "R2C"           // SSID AP Tenda
+#define WIFI_PASS "juarajuara"    // password AP
 ```
-> Host broker, port, pin (IN1=22, IN2=23), dan zona WIB sudah terisi benar.
-> `MQTT_USER`/`MQTT_PASS` dibiarkan kosong (broker publik anonim).
+> Port (1883), pin (IN1=22, IN2=23), zona WIB, dan `TOPIC_NS` sudah terisi.
+> WiFi sudah **hardcoded** — tidak ada captive portal lagi, langsung connect.
 
 ### 2.3 Flash
 1. Buka `firmware/smarthome/smarthome.ino` (file `config.h` ikut otomatis).
 2. *Tools → Board* → **"ESP32 Dev Module"**, pilih **Port** yang benar.
 3. Klik **Upload**. Buka **Serial Monitor** (115200 baud).
 
-### 2.4 Sambungkan ke WiFi (captive portal)
-1. Saat pertama nyala, ESP membuat hotspot **`Smarthome-Setup-01`** (sesuai ID).
-2. Dari HP/laptop, sambung ke hotspot itu → halaman config terbuka otomatis
-   (kalau tidak, buka `192.168.4.1`).
-3. Pilih WiFi venue, masukkan password → **Save**. ESP restart & tersambung.
-   > WiFi tersimpan; tidak perlu ulang.
+### 2.4 WiFi otomatis
+Tidak ada langkah manual. Saat nyala, ESP langsung menyambung ke AP `R2C`.
+Di Serial Monitor akan muncul:
+```
+[wifi] menyambung ke R2C... 
+[wifi] tersambung: 192.168.4.xxx
+[mqtt] menghubungkan... tersambung
+```
 
-**Untuk 10 alat:** ulangi 2.2–2.4, cukup ganti `DEVICE_ID` tiap unit
-(01, 02, …, 10) — `TOPIC_NS` tetap sama. Tempel label angka di tiap alat.
+**Untuk 10 alat:** ulangi 2.2–2.3, cukup ganti `DEVICE_ID` tiap unit
+(01, 02, …, 10) — sisanya sama. Tempel label angka di tiap alat.
 
 ---
 
-## 3. Website
+## 3. Website (dijalankan via HTTP LOKAL)
+
+> ⚠️ **Jangan pakai URL GitHub Pages (https).** Broker lokal memakai `ws://`
+> (tanpa TLS), dan halaman https **dilarang** browser konek ke `ws://`
+> (mixed content). Jadi website harus dibuka via **http lokal**.
 
 ### 3.1 Isi konfigurasi
-Buka `web/config.js` dan samakan `namespace` dengan `TOPIC_NS` firmware:
+Buka `web/config.js`, pastikan menunjuk broker lokal:
 ```js
-host: "broker.emqx.io",
-port: 8084,
-namespace: "r2c-sh-9x4kq2",   // HARUS sama dengan TOPIC_NS di config.h
-deviceCount: 10,
+protocol: "ws",
+host: "192.168.4.180",   // sama dengan MQTT_HOST firmware
+port: 9001,              // listener websockets Mosquitto
+path: "",
 ```
 
-### 3.2 Hosting di GitHub Pages
-1. Buat repo GitHub baru, upload **isi folder `web/`** (index.html, style.css,
-   app.js, config.js) ke root repo.
-2. Repo → **Settings → Pages** → Source: **Deploy from branch** → `main` / `root`.
-3. Tunggu ~1 menit, dapat URL publik mis. `https://namauser.github.io/smarthome/`.
-4. Bagikan URL itu ke peserta. Tiap peserta buka, pilih nomor alatnya.
-
-> Alternatif cepat: drag-drop folder `web/` ke <https://app.netlify.com/drop>.
-
-### 3.3 Uji lokal (opsional, sebelum hosting)
-Dari folder `web/`:
+### 3.2 Jalankan via HTTP lokal
+Dari folder `web/`, di komputer yang terhubung AP `R2C`:
 ```bash
 python -m http.server 8000
 ```
-Buka <http://localhost:8000>. (Pakai server, jangan buka file langsung,
-agar koneksi WSS stabil.)
+- Buka di komputer itu: <http://localhost:8000>
+- Dari HP/laptop peserta lain di WiFi sama: `http://<IP-komputer>:8000`
+  (mis. `http://192.168.4.180:8000` bila dijalankan di komputer broker).
+
+> Praktis: jalankan server web ini di **komputer broker** sekalian, supaya
+> semua peserta cukup buka `http://192.168.4.180:8000`.
 
 ---
 
@@ -105,8 +120,8 @@ agar koneksi WSS stabil.)
   jadwal tetap (tersimpan retained + di NVS ESP).
 
 ### 4.2 Uji tanpa hardware (cek alur MQTT)
-Pakai **MQTT Explorer** (<http://mqtt-explorer.com>) atau klien web EMQX:
-- Connect ke `broker.emqx.io`, port 8883 (TLS) — tanpa user/pass.
+Pakai **MQTT Explorer** (<http://mqtt-explorer.com>):
+- Connect ke `192.168.4.180`, port 1883 (plain) — tanpa user/pass.
 - Publish ke `<NS>/alat-01/relay/1/set` payload `ON` → website Alat 01 berubah ON.
 - Lihat topic retained `<NS>/alat-01/relay/1/state`, `<NS>/alat-01/status`.
 
@@ -120,12 +135,12 @@ aktifkan, Simpan. Amati relay nyala lalu mati otomatis pada menit tsb.
 
 | Gejala | Penyebab & solusi |
 |---|---|
-| Web "Error koneksi" | Cek `host`/`port 8084`/`path /mqtt` di `config.js`. |
+| Web "Error koneksi" | Buka via **http lokal**, bukan https GitHub Pages (ws diblokir di https). Cek `host`/`port 9001`/`protocol: "ws"`. Pastikan broker & listener 9001 jalan. |
+| Web di laptop lain tak konek | Laptop tidak di WiFi `R2C` yang sama, atau firewall komputer broker blokir port 9001. |
 | Alat tak bereaksi dari web | `namespace` (web) ≠ `TOPIC_NS` (firmware). Samakan persis. |
-| Alat lain ikut menyala | Prefix masih default/ketebak. Ganti `TOPIC_NS` jadi acak unik. |
-| ESP tak connect MQTT (Serial `rc=-2/-4`) | WiFi venue blokir port 8883, atau broker publik sibuk. Coba hotspot HP / ulangi. |
+| ESP tak connect MQTT (Serial `rc=-2`) | IP `MQTT_HOST` salah, broker belum jalan, atau listener 1883 belum aktif. Cek IP komputer broker. |
+| ESP tak connect WiFi | SSID/password `R2C`/`juarajuara` salah, atau AP belum nyala. |
 | Relay nyala saat baru dicolok | Pastikan board active-low; firmware sudah set OFF dulu saat boot. |
-| Jadwal meleset | Jam belum sinkron NTP — cek Serial ada `[ntp] ... ok`. Butuh internet. |
+| **Jadwal tidak jalan** | AP lokal **tanpa internet** → NTP gagal (Serial `[ntp] ... gagal`). Jadwal butuh jam akurat. Sambungkan internet ke AP, atau lihat catatan jadwal offline. |
 | Indikator Offline padahal alat hidup | Alat belum konek broker / beda nomor alat dipilih. |
-| Hotspot setup tak muncul | Reset ESP; sambung manual ke `Smarthome-Setup-NN`, buka `192.168.4.1`. |
-| State lama "nyangkut" di web | Pesan retained tersimpan di broker. Hapus: publish payload **kosong** (retain on) ke topik `state`/`status` terkait, atau ganti `TOPIC_NS`. |
+| State lama "nyangkut" di web | Pesan retained tersimpan di broker. Hapus: publish payload **kosong** (retain on) ke topik `state`/`status` terkait. |
