@@ -12,7 +12,7 @@ window.SMARTHOME_CONFIG = {
 
   // Prefix topik UNIK — WAJIB sama persis dengan TOPIC_NS di config.h
   // Ganti dengan string acak milik tim agar tak bentrok dengan orang lain.
-  namespace: "r2c-sh-ganti7acak",
+  namespace: "r2c-sh-7dc6b0",
 
   // Jumlah alat di workshop (membuat pilihan 01..N)
   deviceCount: 10,

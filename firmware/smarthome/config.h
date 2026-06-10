@@ -11,7 +11,7 @@
 // --- Prefix topic UNIK (WAJIB diganti) -------------------------------
 // Broker publik dipakai banyak orang. Ganti dengan string acak unik milik
 // tim Anda agar alat tidak bentrok/diganggu. SAMAKAN dengan web/config.js.
-#define TOPIC_NS "r2c-sh-ganti7acak"
+#define TOPIC_NS "r2c-sh-7dc6b0"
 
 // --- Broker MQTT publik (open access, tanpa daftar) ------------------
 // broker.emqx.io menyediakan MQTTS (ESP) + WSS (web) tanpa sertifikat.
