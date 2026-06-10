@@ -108,6 +108,20 @@ python -m http.server 8000
 > Praktis: jalankan server web ini di **komputer broker** sekalian, supaya
 > semua peserta cukup buka `http://192.168.4.180:8000`.
 
+> Library `mqtt.js` sudah **ditanam lokal** (`web/mqtt.min.js`) — website
+> berjalan **tanpa internet**. (Sebelumnya diambil dari CDN; di AP lokal tanpa
+> internet itu gagal dimuat & bikin web stuck "Menyambung…".)
+
+### 3.3 Opsi: file mandiri (1 file, offline)
+`web/smarthome-standalone.html` berisi SEMUA (HTML+CSS+JS+library) dalam satu
+file. Cocok dibagikan agar tiap peserta jalan sendiri:
+- **Laptop:** kirim file itu, dobel-klik → langsung jalan (tanpa server).
+- Tetap wajib: perangkat tersambung **WiFi `R2C`** & broker punya **listener 9001**.
+- Bila `config.js` diubah (mis. IP broker), bangun ulang: `python build-standalone.py`.
+
+> Di **HP** membuka file lokal lebih ribet — untuk HP tetap paling enak host
+> sekali di komputer broker (cara 3.2).
+
 ---
 
 ## 4. Uji Sistem
