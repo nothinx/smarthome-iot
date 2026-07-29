@@ -6,7 +6,7 @@
 #define CONFIG_H
 
 // --- Identitas alat: GANTI angka ini 1..10 untuk tiap unit ------------
-#define DEVICE_ID 1            // -> topic "<NS>/alat-01/..."
+#define DEVICE_ID 10            // -> topic "<NS>/alat-01/..."
 
 // --- Prefix topic UNIK (WAJIB diganti) -------------------------------
 // Broker publik dipakai banyak orang. Ganti dengan string acak unik milik
