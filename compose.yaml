@@ -1,0 +1,25 @@
+# Broker MQTT + website untuk workshop — pengganti memasang Mosquitto manual (PANDUAN-SETUP §1).
+#   docker compose up -d    # broker :1883 (ESP32) & :9001 (web/ws), website http://<IP-PC>:8080
+#   docker compose logs -f broker
+#   docker compose down
+# ESP32 & browser tetap memakai IP LAN komputer ini (ipconfig), bukan localhost.
+services:
+  broker:
+    image: eclipse-mosquitto:2
+    ports: ["1883:1883", "9001:9001"]
+    configs: [{ source: mosquitto, target: /mosquitto/config/mosquitto.conf }]
+    restart: unless-stopped
+  web:
+    image: nginx:alpine
+    ports: ["8080:80"]
+    volumes: ["./web:/usr/share/nginx/html:ro"]
+    restart: unless-stopped
+
+configs:
+  mosquitto:
+    content: |
+      listener 1883
+      protocol mqtt
+      listener 9001
+      protocol websockets
+      allow_anonymous true

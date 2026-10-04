@@ -11,6 +11,10 @@ Urutan: **(1) Broker lokal → (2) Firmware → (3) Website → (4) Uji**.
 
 ## 1. Broker lokal (Mosquitto)
 
+> **Cara cepat (Docker Desktop):** dari folder proyek jalankan `docker compose up -d`.
+> Broker (1883 + 9001) dan website (`http://<IP-PC>:8080`) langsung jalan dengan konfigurasi
+> di bawah — tidak perlu memasang Mosquitto. Hentikan dengan `docker compose down`.
+
 Komputer teman Anda menjalankan broker. Pastikan dua listener aktif:
 
 | Klien | Host | Port | Protokol |
